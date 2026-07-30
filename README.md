@@ -10,7 +10,31 @@ The workflow in the notebook covers data loading, inspection, cleaning, feature 
 
 ## Dataset
 
-The dataset is stored in `data/raw/customer_churn_data.csv` and contains 7,043 records. The original dataset includes 21 columns such as `gender`, `SeniorCitizen`, `tenure`, `Contract`, `MonthlyCharges`, `TotalCharges`, and `Churn`. 
+I use `data/raw/customer_churn_data.csv` as the source dataset for this project. The dataset contains 7,043 rows and 21 columns, including customer demographics, service usage, account details, billing features, and the churn label.
+
+The raw columns in the notebook are:
+
+- `customerID`
+- `gender`
+- `SeniorCitizen`
+- `Partner`
+- `Dependents`
+- `tenure`
+- `PhoneService`
+- `MultipleLines`
+- `InternetService`
+- `OnlineSecurity`
+- `OnlineBackup`
+- `DeviceProtection`
+- `TechSupport`
+- `StreamingTV`
+- `StreamingMovies`
+- `Contract`
+- `PaperlessBilling`
+- `PaymentMethod`
+- `MonthlyCharges`
+- `TotalCharges`
+- `Churn`
 
 ### Target variable
 
@@ -25,29 +49,81 @@ The dataset is stored in `data/raw/customer_churn_data.csv` and contains 7,043 r
 
 ## Notebook Workflow
 
-### 1. Data loading and inspection
+### 1. Data Cleaning and Handling
 
-The notebook loads the dataset from Google Drive, checks the shape and data types, and reviews summary statistics and sample rows. It also identifies that `TotalCharges` is stored as an object column and that the dataset contains a mix of numeric and categorical features. 
+I begin by loading the dataset and checking its structure with `info()`, `head()`, `describe()`, and full table inspection. At this stage, I confirm that the dataset has 7,043 entries. I inspect basic numerical summaries for variables such as `SeniorCitizen`, `tenure`, and `MonthlyCharges`. For example, the notebook shows an average tenure of 32.37 and an average monthly charge of 64.76 in the raw dataset. I also observe that `TotalCharges` is loaded as an object column instead of a numeric column. This is due to some records containing strings with only whitespaces or " ". Since these records also show their `tenure = 0`, meaning they are new customers, I replaced these empty strings with 0, and then converted the column to a numerical data type. Additionally, There are multiple categorical columns (`OnlineSecurity, DeviceProtection, TechSupport, StreamingTV, StreamingMovies`) that have an unnecessary category `No internet service` and one column (`MultipleLines`) with the category `No Phone service`. These columns also contained categories `Yes` and `No`. Thus, I converted the unnecessary categories to `No` to standardize these columns.
 
-### 2. Exploratory data analysis
+### 2. Exploratory Data Analysis (EDA)
 
-The analysis checks churn distribution and explores categorical churn patterns. The clearest relationship appears in `Contract`, where churn is highest for `Month-to-month` customers and lowest for `Two year` customers. 
+I continue with exploratory data analysis by reviewing the distribution of the raw variables, checking correlations for the numerical features, and studying churn behavior across categorical and numerical variables. To make this easier to read, I group the EDA into five visual analysis blocks that follow the notebook order. 
 
-The notebook also shows that churned customers have shorter average tenure than retained customers, with mean tenure around 17.98 for churned users versus 37.57 for retained users. 
+#### 2.1. Data Distribution
+
+![Data Distribution of the numerical features](/../images/data_distribution.png)
+
+In the data distribution plots, I inspect the spread of the main numerical features: `SeniorCitizen`, `tenure`, `MonthlyCharges`, and `TotalCharges`. `SeniorCitizen` is highly imbalanced because most customers are non-seniors, `tenure` spans the full service range with visible concentration at lower and higher values, `MonthlyCharges` shows a broad spread across service plans, and `TotalCharges` is right-skewed because many customers have low accumulated billing while fewer customers have very high totals. 
+
+This visualization helps me understand the overall shape of the data before modeling. It also confirms that the dataset mixes binary, discrete, and continuous-like variables, which is important for choosing later preprocessing steps. 
+
+#### 2.2. Boxplot Analysis
+
+![Boxplot Analysis of the numerical features against the Churn label](/../images/boxplots.png)
+
+In the boxplots, I compare `tenure`, `MonthlyCharges`, and `TotalCharges` against the churn label. The `tenure` boxplot shows the strongest separation: churned customers have a much lower median tenure and a tighter concentration near the beginning of the customer lifecycle, while retained customers have a much wider tenure distribution. 
+
+The `MonthlyCharges` boxplot shows that churned customers tend to sit at higher charge levels than non-churned customers. The `TotalCharges` boxplot also shows a clear difference, with retained customers generally accumulating much larger total charges because they stay longer, even though churned customers still have a range of high outliers. 
+
+#### 2.3. Correlation Heatmap
+
+![Correlation Heatmap of the numerical features with Churn label](/../images/correlation_heatmap.png)
+
+The correlation heatmap focuses on `tenure`, `MonthlyCharges`, `TotalCharges`, and `Churn`. I see a strong positive correlation of 0.83 between `tenure` and `TotalCharges`, a moderate positive correlation of 0.65 between `MonthlyCharges` and `TotalCharges`, and a negative correlation of -0.35 between `tenure` and `Churn`. 
+
+`MonthlyCharges` and `Churn` show a weaker positive relationship of 0.19, while `TotalCharges` and `Churn` show a negative relationship of -0.20. This tells me that tenure is the strongest linear signal in the set, while billing variables contribute additional but weaker churn information. 
+
+#### 2.4. Countplots of Categorical Features
+
+![Countplot Analysis of the categorical features](/../images/countplots.png)
+
+I then visualize the raw frequency distribution of the categorical variables using countplots. These plots show that the dataset is fairly balanced by `gender`, slightly skewed toward customers without a `Partner`, and more skewed toward customers without `Dependents`. 
+
+Several service-related variables also show clear usage patterns. Most customers have `PhoneService`, many have `MultipleLines = No`, `InternetService` is dominated by `Fiber optic` and `DSL`, and the availability of add-on services such as `OnlineSecurity`, `DeviceProtection`, `TechSupport`, `StreamingTV`, and `StreamingMovies` varies noticeably across the customer base. 
+
+The `Contract` countplot is especially important because it shows that `Month-to-month` is the most common contract type, followed by `One year`, then `Two year`. `PaperlessBilling` also shows a notable skew toward `Yes`, and `PaymentMethod` is spread across several payment options with `Electronic check` appearing prominently. 
+
+#### 2.5. Proportion of Churn in Categorical Features
+
+![Proportion Analysis of the categorical features](/../images/proportions.png)
+
+After the raw countplots, I plot stacked proportion charts to see how churn is distributed inside each category. This is more informative than counts alone because it shows whether a category has a higher churn share even when its total population is larger. 
+
+The clearest pattern appears in `Contract`: `Month-to-month` has the largest churn proportion, while `One year` and especially `Two year` have much smaller churn shares. This reinforces the idea that longer commitments are associated with retention.
+
+I also see elevated churn proportions for customers without `OnlineSecurity`, `TechSupport`, and `DeviceProtection`, and for customers using `Fiber optic` internet service. `PaperlessBilling` and `PaymentMethod` also show meaningful churn differences, with `Electronic check` standing out as a higher-risk payment method in the stacked proportion plot. 
 
 ### 3. Feature engineering
 
-The target column `Churn` is mapped to binary values, `customerID` is removed, and `SeniorCitizen` is mapped to a more readable representation. Categorical variables are one-hot encoded, while `Contract` is manually ordinal-encoded as `Month-to-month = 0`, `One year = 1`, and `Two year = 2`. 
+After EDA, I move to feature engineering. I first drop `customerID`, and remap `SeniorCitizen` from `1/0` into `Yes/No` so it can be handled consistently with the other categorical variables.
+
+Next, I apply one-hot encoding to the categorical variables, including `gender`, `SeniorCitizen`, `Partner`, `Dependents`, `PhoneService`, `MultipleLines`, `InternetService`, `OnlineSecurity`, `OnlineBackup`, `DeviceProtection`, `TechSupport`, `StreamingTV`, `StreamingMovies`, `PaperlessBilling`, and `PaymentMethod`.
+
+For `Contract`, I keep a manual ordinal representation instead of one-hot encoding it. In the notebook, I map `Month-to-month = 0`, `One year = 1`, and `Two year = 2`.
 
 ### 4. Feature selection
 
-The notebook uses chi-square based feature selection and keeps `tenure`, `Contract`, `MonthlyCharges`, and `TotalCharges` as the selected predictors. This makes the final modeling stage more compact and focused on the strongest signals. 
+Once the feature matrix is prepared, I run chi-square feature selection using `SelectKBest(chi2, k=4)`. The selected predictors are `tenure`, `Contract`, `MonthlyCharges`, and `TotalCharges`.
 
-### 5. Train-test split and scaling
+This gives me a smaller and more focused feature set for the downstream models. I then define `X_new` using those four selected variables and keep `Churn` as the target.
 
-The data is split into training and testing sets using an 80/20 split with stratification. Standard scaling is then applied to the selected features before model training. 
+### 5. Train Test Split
 
-### 6. Model training and evaluation
+After selecting the final features, I split the data into training and testing sets using `train_test_split` with `test_size = 0.2`, `random_state = 42`, and `stratify = y`. This keeps the class balance more stable between the train and test partitions. 
+
+### 6. Scaling Train and Test Dataset
+
+Next, I standardize the selected numerical features using `StandardScaler`. I fit the scaler on the training data and apply the same transformation to the test data so both sets stay on the same scale.
+
+### 7. Model training and evaluation
 
 Several classification models are trained and compared, including Logistic Regression, SVM, Decision Tree, Random Forest, KNN, Naive Bayes, LDA, and XGBoost. The notebook evaluates the models with cross-validated ROC AUC and accuracy. 
 
@@ -121,7 +197,7 @@ Telco_Customer_Churn/
    jupyter notebook
    ```
 
-5. Run `notebooks/telco_customer_churn_prediction.ipynb.ipynb` from top to bottom.
+5. Run `notebooks/telco_customer_churn_prediction.ipynb` from top to bottom.
 
 ## Business Value
 
