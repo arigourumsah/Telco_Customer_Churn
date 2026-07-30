@@ -59,7 +59,7 @@ I continue with exploratory data analysis by reviewing the distribution of the r
 
 #### 2.1. Data Distribution
 
-![Data Distribution of the numerical features](/../images/data_distribution.png)
+![Data Distribution of the numerical features](/images/data_distribution.png)
 
 In the data distribution plots, I inspect the spread of the main numerical features: `SeniorCitizen`, `tenure`, `MonthlyCharges`, and `TotalCharges`. `SeniorCitizen` is highly imbalanced because most customers are non-seniors, `tenure` spans the full service range with visible concentration at lower and higher values, `MonthlyCharges` shows a broad spread across service plans, and `TotalCharges` is right-skewed because many customers have low accumulated billing while fewer customers have very high totals. 
 
@@ -67,7 +67,7 @@ This visualization helps me understand the overall shape of the data before mode
 
 #### 2.2. Boxplot Analysis
 
-![Boxplot Analysis of the numerical features against the Churn label](/../images/boxplots.png)
+![Boxplot Analysis of the numerical features against the Churn label](/images/boxplots.png)
 
 In the boxplots, I compare `tenure`, `MonthlyCharges`, and `TotalCharges` against the churn label. The `tenure` boxplot shows the strongest separation: churned customers have a much lower median tenure and a tighter concentration near the beginning of the customer lifecycle, while retained customers have a much wider tenure distribution. 
 
@@ -75,7 +75,7 @@ The `MonthlyCharges` boxplot shows that churned customers tend to sit at higher 
 
 #### 2.3. Correlation Heatmap
 
-![Correlation Heatmap of the numerical features with Churn label](/../images/correlation_heatmap.png)
+![Correlation Heatmap of the numerical features with Churn label](/images/correlation_heatmap.png)
 
 The correlation heatmap focuses on `tenure`, `MonthlyCharges`, `TotalCharges`, and `Churn`. I see a strong positive correlation of 0.83 between `tenure` and `TotalCharges`, a moderate positive correlation of 0.65 between `MonthlyCharges` and `TotalCharges`, and a negative correlation of -0.35 between `tenure` and `Churn`. 
 
@@ -83,7 +83,7 @@ The correlation heatmap focuses on `tenure`, `MonthlyCharges`, `TotalCharges`, a
 
 #### 2.4. Countplots of Categorical Features
 
-![Countplot Analysis of the categorical features](/../images/countplots.png)
+![Countplot Analysis of the categorical features](/images/countplots.png)
 
 I then visualize the raw frequency distribution of the categorical variables using countplots. These plots show that the dataset is fairly balanced by `gender`, slightly skewed toward customers without a `Partner`, and more skewed toward customers without `Dependents`. 
 
@@ -93,7 +93,7 @@ The `Contract` countplot is especially important because it shows that `Month-to
 
 #### 2.5. Proportion of Churn in Categorical Features
 
-![Proportion Analysis of the categorical features](/../images/proportions.png)
+![Proportion Analysis of the categorical features](/images/proportions.png)
 
 After the raw countplots, I plot stacked proportion charts to see how churn is distributed inside each category. This is more informative than counts alone because it shows whether a category has a higher churn share even when its total population is larger. 
 
